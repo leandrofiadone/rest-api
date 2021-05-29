@@ -4,7 +4,8 @@
   "description": "recuerde usar npm install para poder reconstruir 'node_modules'",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm start"
   },
   "keywords": [],
   "author": "",
