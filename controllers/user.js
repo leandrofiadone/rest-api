@@ -22,6 +22,9 @@ const userGet = async( req, res = response) => {
       total, 
       users
    });
+
+   // nota: 
+
 };
 
 const userPost = async(req, res) => {
