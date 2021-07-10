@@ -62,7 +62,7 @@ const userDelete = async(req, res) => {
 
    res.json({
       user
-   });
+   })
 
 };
 

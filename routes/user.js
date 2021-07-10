@@ -12,8 +12,16 @@ const {
    userPatch } = require('../controllers/user');
    
 // validarCampo atrapa los errores que le mando el check, si hay erroes es el encargado de mostrar los errores, o si esta todo  ok, deja pasar la app
-const { validarCampo } = require('../middleware/validar-campo');
-const { esRolValido, esEmailValido, existeUserId } = require('../helpers/db-validators');
+// helpers
+const { esRolValido, 
+        esEmailValido, 
+        existeUserId } = require('../helpers/db-validators');
+
+// middlewares
+const { validarCampo, 
+        validarJWT, 
+        tieneRole, 
+        esAdminRole} = require('../middleware');
    
 const router = Router();
 
@@ -38,6 +46,9 @@ router.post( '/',[
 
 // peticion delete
 router.delete( '/:id',[
+   validarJWT,
+   // esAdminRole,
+   tieneRole('ADMIN_ROLE', 'VENTAS_ROLE'),
    check('id', 'no es un id valido').isMongoId(),
    check('id').custom( existeUserId ),
    validarCampo
