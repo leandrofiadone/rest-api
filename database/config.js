@@ -1,23 +1,28 @@
 const mongoose = require('mongoose');
 
+
+
 const dbConnection = async() => {
 
+    try {
 
-   try {
-      
-      await mongoose.connect( process.env.MONGO_CNN, {
-         useNewUrlParser: true,
-         useUnifiedTopology: true,
-         useCreateIndex: true,
-         useFindAndModify: false
-      });
+        await mongoose.connect( process.env.MONGO_CNN, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useCreateIndex: true,
+            useFindAndModify: false
+        });
 
-   } catch (error) {
-      console.log(error);
-      throw new Error('no se pudo conectar con mongo');
-   }
-
-};
+    } catch (error) {
+        console.log(error);
+        throw new Error('Error a la hora de iniciar la base de datos');
+    }
 
 
-module.exports = dbConnection;
+}
+
+
+
+module.exports = {
+    dbConnection
+}
