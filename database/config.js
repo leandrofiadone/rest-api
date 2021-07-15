@@ -13,6 +13,7 @@ const dbConnection = async() => {
             useFindAndModify: false
         });
 
+
     } catch (error) {
         console.log(error);
         throw new Error('Error a la hora de iniciar la base de datos');
