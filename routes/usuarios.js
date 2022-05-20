@@ -1,58 +1,48 @@
+const {Router} = require('express');
+const {check} = require('express-validator');
 
-const { Router } = require('express');
-const { check } = require('express-validator');
+// controllers
+const { addUser,
+        getUsers,
+        getUser,
+        putUser,
+        deleteUser } = require('../controllers/usuarios');
 
-const {
-    validarCampos,
-    validarJWT,
-    esAdminRole,
-    tieneRole
-} = require('../middlewares');
+// helpers
+const { verficarEmail, verificarId } = require('../helpers/db-validators');
 
-
-const { esRoleValido, emailExiste, existeUsuarioPorId } = require('../helpers/db-validators');
-
-const { usuariosGet,
-        usuariosPut,
-        usuariosPost,
-        usuariosDelete,
-        usuariosPatch } = require('../controllers/usuarios');
+// middlewares
+const {validarCampos} = require('../middlewares');
 
 const router = Router();
 
-
-router.get('/', usuariosGet );
-
-router.put('/:id',[
-    check('id', 'No es un ID válido').isMongoId(),
-    check('id').custom( existeUsuarioPorId ),
-    check('rol').custom( esRoleValido ), 
+router.post('/', [
+    check('email', 'Email is required').isEmail(),
+    check('email').custom(verficarEmail),
+    check('name', 'Name is required').not().isEmpty(),
+    check('password', 'password is required').isLength({min: 6}),
+    check('rol', 'rol is required').not().isEmpty(),
     validarCampos
-],usuariosPut );
+], addUser)
 
-router.post('/',[
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('password', 'El password debe de ser más de 6 letras').isLength({ min: 6 }),
-    check('correo', 'El correo no es válido').isEmail(),
-    check('correo').custom( emailExiste ),
-    // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
-    check('rol').custom( esRoleValido ), 
+router.get('/', getUsers)
+
+router.get('/:id', [
+    check('id', 'Id is not valid').isNumeric(),
+    check('id').custom(verificarId),
     validarCampos
-], usuariosPost );
+],getUser)
 
-router.delete('/:id',[
-    validarJWT,
-    // esAdminRole,
-    tieneRole('ADMIN_ROLE', 'VENTAR_ROLE','OTRO_ROLE'),
-    check('id', 'No es un ID válido').isMongoId(),
-    check('id').custom( existeUsuarioPorId ),
+router.put('/:id', [
+    check('id', 'id is not valid').isNumeric(),
+    check('id').custom(verificarId),
     validarCampos
-],usuariosDelete );
+], putUser)
 
-router.patch('/', usuariosPatch );
-
-
-
-
+router.delete('/:id', [
+    check('id', 'Id is not valid').isNumeric(),
+    check('id').custom(verificarId),
+    validarCampos
+], deleteUser)
 
 module.exports = router;

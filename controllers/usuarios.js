@@ -1,84 +1,125 @@
-const { response, request } = require('express');
+const { response, request } = require("express");
 const bcryptjs = require('bcryptjs');
+const { UserModel } = require("../models");
 
+const addUser = async(req = request, res = response) => {
 
-const Usuario = require('../models/usuario');
-
-
-
-const usuariosGet = async(req = request, res = response) => {
-
-    const { limite = 5, desde = 0 } = req.query;
-    const query = { estado: true };
-
-    const [ total, usuarios ] = await Promise.all([
-        Usuario.countDocuments(query),
-        Usuario.find(query)
-            .skip( Number( desde ) )
-            .limit(Number( limite ))
-    ]);
-
-    res.json({
-        total,
-        usuarios
-    });
-}
-
-const usuariosPost = async(req, res = response) => {
+    const {email, password, name, rol} = req.body;
     
-    const { nombre, correo, password, rol } = req.body;
-    const usuario = new Usuario({ nombre, correo, password, rol });
+    try {
+        // encriptamos el password
+        const hash = bcryptjs.hashSync(password, 10);
 
-    // Encriptar la contraseña
-    const salt = bcryptjs.genSaltSync();
-    usuario.password = bcryptjs.hashSync( password, salt );
+        // insertamos en la base de datos el user
+        const user = await UserModel.create({email, password: hash, name, rol});
 
-    // Guardar en BD
-    await usuario.save();
+        res.json({
+          ok: true,
+          name: user.name,
+          id: user.id
+        })
 
-    res.json({
-        usuario
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: "Hable con el administrador",
+        });
+    }
+};
+
+const getUsers = async(req = request, res = response) => {
+  try {
+    const users = await UserModel.findAll({
+      attributes: ['id', 'name', 'email']
     });
-}
 
-const usuariosPut = async(req, res = response) => {
+    res.status(200).json({
+      ok: true,
+      users
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Hable con el administrador",
+    });
+  }
+};
 
-    const { id } = req.params;
-    const { _id, password, google, correo, ...resto } = req.body;
+const getUser = async(req = request, res = response) => {
+  const {id} = req.params;
+  try {
+    const user = await UserModel.findByPk(id, {
+      attributes: ['id', 'email', 'name']
+    });
 
-    if ( password ) {
-        // Encriptar la contraseña
-        const salt = bcryptjs.genSaltSync();
-        resto.password = bcryptjs.hashSync( password, salt );
+    res.status(200).json({
+      ok: true,
+      user
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Hable con el administrador",
+    });
+  }
+};
+
+const putUser = async(req = request, res = response) => {
+  const {id} = req.params;
+  const {password, ...resto} = req.body;
+  try {
+    if(password){
+      resto.password = bcryptjs.hashSync(password, 10)
     }
 
-    const usuario = await Usuario.findByIdAndUpdate( id, resto );
-
-    res.json(usuario);
-}
-
-const usuariosPatch = (req, res = response) => {
-    res.json({
-        msg: 'patch API - usuariosPatch'
+    const user = await UserModel.update(resto, {
+      where: {
+        id
+      }
     });
-}
-
-const usuariosDelete = async(req, res = response) => {
-
-    const { id } = req.params;
-    const usuario = await Usuario.findByIdAndUpdate( id, { estado: false } );
-
     
-    res.json(usuario);
-}
+    res.status(201).json({
+      ok: true,
+      msg: 'Cambios realizados correctamente'
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Hable con el administrador",
+    });
+  }
+};
 
+const deleteUser = async(req = request, res = response) => {
+  const {id} = req.params;
+  try {
+    const user = await UserModel.update({state: false}, {
+      where: {
+        id
+      }
+    })
 
-
+    res.status(201).json({
+      ok: true,
+      msg: 'Usuario desactivado'
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Hable con el administrador",
+    });
+  }
+};
 
 module.exports = {
-    usuariosGet,
-    usuariosPost,
-    usuariosPut,
-    usuariosPatch,
-    usuariosDelete,
-}
+  addUser,
+  getUsers,
+  getUser,
+  putUser,
+  deleteUser,
+};

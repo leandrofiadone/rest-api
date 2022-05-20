@@ -1,67 +1,34 @@
-const Role = require('../models/role');
-const {Usuario, Categoria, Producto} = require('../models');
+const { UserModel } = require("../models");
 
-const esRoleValido = async(rol = '') => {
-
-    const existeRol = await Role.findOne({ rol });
-    if ( !existeRol ) {
-        throw new Error(`El rol ${ rol } no está registrado en la BD`);
-    }
+//  ================== VERIFICACIONES PARA EL MANEJO DE LOS USUARIOS ==========
+const verficarEmail = async(email = '') => {
+   const user = await UserModel.findOne({email});
+   if(user){
+      throw new Error(`Ya existe el email ${email}`)
+   }
 }
 
-const emailExiste = async( correo = '' ) => {
-
-    // Verificar si el correo existe
-    const existeEmail = await Usuario.findOne({ correo });
-    if ( existeEmail ) {
-        throw new Error(`El correo: ${ correo }, ya está registrado`);
-    }
+const verificarId = async(id = '') => {
+   const user = await UserModel.findByPk(id)
+   if(!user){
+      throw new Error(`No existe el usuario con el id ${id}`)
+   }
 }
 
-const existeUsuarioPorId = async( id ) => {
-
-    // Verificar si el correo existe
-    const existeUsuario = await Usuario.findById(id);
-    if ( !existeUsuario ) {
-        throw new Error(`El id no existe ${ id }`);
-    }
-}
-
-const existeCategoriaPorId = async(id) => {
-
-    const existeCategoria = await Categoria.findById(id);
-    if(!existeCategoria){
-        throw new Error(`El id ${id} no existe`)
-    }
-}
-
-const existeProductoPorId = async(id) => {
-
-    const existeProducto = await Producto.findById(id);
-    if(!existeProducto){
-        throw new Error(`El id ${id} no existe`)
-    }
-
-}
-
-// validar colecciones permitidas
-const coleccionesPermitidas = async( coleccion = '', colecciones = []) => {
-
-    const incluida = colecciones.includes(coleccion);
-    if(!incluida){
-        throw new Error(`La coleccion ${coleccion} no es permitida, las permitidas son ${colecciones}`);
-    }
-
-    return true;
-
+// =================== VERIFICACIONES PARA EL LOGIN =================
+const existeEmail = async(email = '') => {
+   const user = await UserModel.findOne({
+      where: {
+         email
+      }
+   });
+   if(!user){
+      throw new Error(`El usuario ${email} no existe`)
+   }
 }
 
 module.exports = {
-    esRoleValido,
-    emailExiste,
-    existeUsuarioPorId,
-    existeCategoriaPorId,
-    existeProductoPorId,
-    coleccionesPermitidas
+   verficarEmail,
+   verificarId,
+   existeEmail
 }
-

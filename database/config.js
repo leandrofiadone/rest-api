@@ -1,29 +1,10 @@
-const mongoose = require('mongoose');
+const {Sequelize} = require('sequelize');
 
+const {DB_USER, DB, DB_HOST, DB_PASSWORD} = process.env;
 
+const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB}`, {
+    logging: false,
+    native: false
+});
 
-const dbConnection = async() => {
-
-    try {
-
-        await mongoose.connect( process.env.MONGO_CNN, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            useCreateIndex: true,
-            useFindAndModify: false
-        });
-
-
-    } catch (error) {
-        console.log(error);
-        throw new Error('Error a la hora de iniciar la base de datos');
-    }
-
-
-}
-
-
-
-module.exports = {
-    dbConnection
-}
+module.exports = sequelize;
